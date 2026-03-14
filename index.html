@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Japanese - Interactive Greet</title>
+    <meta name="description" content="A premium interactive Japanese learning experience.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <main id="app">
+        <div class="container">
+            <header>
+                <h1>Konnichiwa! <span class="accent">Japanese Learning</span></h1>
+            </header>
+
+            <div id="game-container" class="glass">
+                <div id="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+
+                <div id="character-stage">
+                    <div id="char-left" class="character">
+                        <div class="char-label">Yuki</div>
+                        <img src="yuki.png" alt="Yuki" id="yuki-img">
+                        <div class="speech-bubble left" id="bubble-yuki">
+                            <p class="jp-text"></p>
+                            <p class="en-text"></p>
+                        </div>
+                    </div>
+                    <div id="char-right" class="character">
+                        <div class="char-label">Kenji</div>
+                        <img src="kenji.png" alt="Kenji" id="kenji-img">
+                        <div class="speech-bubble right" id="bubble-kenji">
+                            <p class="jp-text"></p>
+                            <p class="en-text"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="test-phase" class="hidden">
+                    <h2>Test Your Skills!</h2>
+                    <p id="test-prompt">Kenji is asking: <span class="highlight">"O-namae wa nan desu ka?"</span></p>
+                    <div class="input-group">
+                        <input type="text" id="user-input" placeholder="Type your name in Romaji..." autocomplete="off">
+                        <button id="submit-btn" class="glow-button">Check</button>
+                    </div>
+                    <div id="feedback" class="feedback"></div>
+                </div>
+
+                <div id="controls">
+                    <div class="nav-btns">
+                        <button id="back-btn" class="glow-button hidden">Back</button>
+                        <button id="next-btn" class="glow-button hidden">Next Topic</button>
+                        <button id="start-btn" class="glow-button">Start Learning</button>
+                    </div>
+                    <button id="restart-btn" class="small-btn hidden">Restart Lesson</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="app.js"></script>
+</body>
+
+</html>
