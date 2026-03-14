@@ -22,46 +22,61 @@
             </header>
 
             <div id="game-container" class="glass">
-                <div id="progress-container">
-                    <div id="progress-bar"></div>
+                <!-- Home View -->
+                <div id="home-view">
+                    <header>
+                        <h1>Nihongo <span class="accent">Master</span></h1>
+                        <p class="subtitle">Select your lesson to begin</p>
+                    </header>
+                    <div id="scenario-grid" class="scenario-grid">
+                        <!-- Scenarios will be injected here -->
+                    </div>
                 </div>
 
-                <div id="character-stage">
-                    <div id="char-left" class="character">
-                        <div class="char-label">Yuki</div>
-                        <img src="yuki.png" alt="Yuki" id="yuki-img">
-                        <div class="speech-bubble left" id="bubble-yuki">
-                            <p class="jp-text"></p>
-                            <p class="en-text"></p>
+                <!-- Lesson View -->
+                <div id="lesson-view" class="hidden">
+                    <div id="lesson-header">
+                        <button id="exit-lesson" class="text-link">← Back to Scenarios</button>
+                        <div id="progress-container">
+                            <div id="progress-bar"></div>
                         </div>
                     </div>
-                    <div id="char-right" class="character">
-                        <div class="char-label">Kenji</div>
-                        <img src="kenji.png" alt="Kenji" id="kenji-img">
-                        <div class="speech-bubble right" id="bubble-kenji">
-                            <p class="jp-text"></p>
-                            <p class="en-text"></p>
+
+                    <div id="character-stage">
+                        <div id="char-left" class="character">
+                            <div class="char-label">Yuki</div>
+                            <img src="yuki.png" alt="Yuki" id="yuki-img">
+                            <div class="speech-bubble" id="bubble-yuki">
+                                <p class="jp-text"></p>
+                                <p class="en-text"></p>
+                            </div>
+                        </div>
+                        <div id="char-right" class="character">
+                            <div class="char-label">Kenji</div>
+                            <img src="kenji.png" alt="Kenji" id="kenji-img">
+                            <div class="speech-bubble" id="bubble-kenji">
+                                <p class="jp-text"></p>
+                                <p class="en-text"></p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="test-phase" class="hidden">
-                    <h2>Test Your Skills!</h2>
-                    <p id="test-prompt">Kenji is asking: <span class="highlight">"O-namae wa nan desu ka?"</span></p>
-                    <div class="input-group">
-                        <input type="text" id="user-input" placeholder="Type your name in Romaji..." autocomplete="off">
-                        <button id="submit-btn" class="glow-button">Check</button>
+                    <div id="test-phase" class="hidden">
+                        <p id="test-prompt">Ready?</p>
+                        <div class="input-group">
+                            <input type="text" id="user-input" placeholder="Type in Romaji..." autocomplete="off">
+                            <button id="submit-btn" class="glow-button">Check</button>
+                        </div>
+                        <div id="feedback" class="feedback"></div>
                     </div>
-                    <div id="feedback" class="feedback"></div>
-                </div>
 
-                <div id="controls">
-                    <div class="nav-btns">
-                        <button id="back-btn" class="glow-button hidden">Back</button>
-                        <button id="next-btn" class="glow-button hidden">Next Topic</button>
-                        <button id="start-btn" class="glow-button">Start Learning</button>
+                    <div id="controls">
+                        <div class="nav-btns">
+                            <button id="back-btn" class="glow-button hidden">Back</button>
+                            <button id="next-btn" class="glow-button hidden">Next Topic</button>
+                        </div>
+                        <button id="restart-btn" class="small-btn hidden">Restart Lesson</button>
                     </div>
-                    <button id="restart-btn" class="small-btn hidden">Restart Lesson</button>
                 </div>
             </div>
         </div>

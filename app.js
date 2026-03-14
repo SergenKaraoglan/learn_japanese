@@ -1,38 +1,86 @@
-const scenarios = [
+const scenariosData = {
+    greetings: [
+        {
+            character: 'yuki',
+            text: 'Konnichiwa!',
+            en: 'Hello!',
+            jpTokens: [{ text: 'Konnichiwa!', color: '#6366f1' }],
+            enTokens: [{ text: 'Hello!', color: '#6366f1' }]
+        },
+        {
+            character: 'kenji',
+            text: 'Konnichiwa!',
+            en: 'Hello!',
+            jpTokens: [{ text: 'Konnichiwa!', color: '#6366f1' }],
+            enTokens: [{ text: 'Hello!', color: '#6366f1' }]
+        },
+        {
+            character: 'kenji',
+            text: 'O-genki desu ka?',
+            en: 'How are you?',
+            jpTokens: [
+                { text: 'O-genki', color: '#10b981' },
+                { text: 'desu', color: '#f59e0b' },
+                { text: 'ka?', color: '#f43f5e' }
+            ],
+            enTokens: [
+                { text: 'How', color: '#10b981' },
+                { text: 'are', color: '#f59e0b' },
+                { text: 'you?', color: '#f43f5e' }
+            ]
+        },
+        {
+            character: 'yuki',
+            text: 'Hai, genki desu.',
+            en: 'Yes, I am fine.',
+            jpTokens: [
+                { text: 'Hai,', color: '#8b5cf6' },
+                { text: 'genki', color: '#10b981' },
+                { text: 'desu.', color: '#f59e0b' }
+            ],
+            enTokens: [
+                { text: 'Yes,', color: '#8b5cf6' },
+                { text: 'I am', color: '#f59e0b' },
+                { text: 'fine.', color: '#10b981' }
+            ]
+        },
+        {
+            character: 'yuki',
+            text: 'Anata wa?',
+            en: 'And you?',
+            jpTokens: [
+                { text: 'Anata', color: '#06b6d4' },
+                { text: 'wa?', color: '#06b6d4' }
+            ],
+            enTokens: [
+                { text: 'And', color: '#ec4899' },
+                { text: 'you?', color: '#06b6d4' }
+            ]
+        }
+    ]
+};
+
+const availableScenarios = [
     {
-        character: 'yuki',
-        text: 'Konnichiwa!',
-        en: 'Hello!'
-    },
-    {
-        character: 'kenji',
-        text: 'Konnichiwa!',
-        en: 'Hello!'
-    },
-    {
-        character: 'kenji',
-        text: 'O-genki desu ka?',
-        en: 'How are you?'
-    },
-    {
-        character: 'yuki',
-        text: 'Hai, genki desu.',
-        en: 'Yes, I am fine.'
-    },
-    {
-        character: 'yuki',
-        text: 'Anata wa?',
-        en: 'And you?'
+        id: 'greetings',
+        title: 'Greetings',
+        description: 'Learn basic greetings and how to ask how someone is doing.',
+        difficulty: 'Beginner'
     }
 ];
 
+let scenarios = [];
 let currentStep = 0;
 let mode = 'WATCH'; // 'WATCH', 'REPEAT'
 let currentPlayer = 'yuki'; // Who the user is currently playing
 
+const homeView = document.getElementById('home-view');
+const lessonView = document.getElementById('lesson-view');
+const scenarioGrid = document.getElementById('scenario-grid');
+const exitLessonBtn = document.getElementById('exit-lesson');
+
 const nextBtn = document.getElementById('next-btn');
 const backBtn = document.getElementById('back-btn');
-const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
 const testPhase = document.getElementById('test-phase');
 const charStage = document.getElementById('character-stage');
@@ -53,8 +101,12 @@ const characters = {
 };
 
 function hideAllBubbles() {
-    Object.values(bubbles).forEach(b => b.classList.remove('active'));
-    Object.values(characters).forEach(c => c.classList.remove('speaking'));
+    Object.values(bubbles).forEach(b => {
+        if (b) b.classList.remove('active');
+    });
+    Object.values(characters).forEach(c => {
+        if (c) c.classList.remove('speaking');
+    });
 }
 
 function updateProgress() {
@@ -118,7 +170,7 @@ function updateUI() {
             userInput.focus();
             setTimeout(() => bubble.classList.add('active'), 100);
         } else {
-            // Kenji speaks normally
+            // Other character speaks normally
             bubble.querySelector('.jp-text').textContent = s.text;
             bubble.querySelector('.en-text').textContent = s.en;
             nextBtn.classList.remove('hidden');
@@ -223,10 +275,43 @@ function checkAnswer() {
     }
 }
 
-startBtn.addEventListener('click', () => {
-    startBtn.classList.add('hidden');
+function renderHome() {
+    homeView.classList.remove('hidden');
+    lessonView.classList.add('hidden');
+    scenarioGrid.innerHTML = '';
+
+    availableScenarios.forEach(scen => {
+        const card = document.createElement('div');
+        card.className = 'scenario-card';
+        card.innerHTML = `
+            <span class="badge">${scen.difficulty}</span>
+            <h3>${scen.title}</h3>
+            <p>${scen.description}</p>
+        `;
+        card.onclick = () => startLesson(scen.id);
+        scenarioGrid.appendChild(card);
+    });
+}
+
+function startLesson(scenarioId) {
+    scenarios = scenariosData[scenarioId];
+    currentStep = 0;
+    mode = 'WATCH';
+    currentPlayer = 'yuki';
+
+    homeView.classList.add('hidden');
+    lessonView.classList.remove('hidden');
+    testPhase.classList.add('hidden');
+    feedback.textContent = '';
+
     updateUI();
-});
+}
+
+function exitToHome() {
+    hideAllBubbles();
+    homeView.classList.remove('hidden');
+    lessonView.classList.add('hidden');
+}
 
 nextBtn.addEventListener('click', () => {
     currentStep++;
@@ -255,12 +340,12 @@ restartBtn.addEventListener('click', () => {
     updateUI();
 });
 
+exitLessonBtn.addEventListener('click', exitToHome);
+
 // Keyboard Navigation
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        if (!startBtn.classList.contains('hidden')) {
-            startBtn.click();
-        } else if (!nextBtn.classList.contains('hidden')) {
+        if (!nextBtn.classList.contains('hidden')) {
             nextBtn.click();
         } else if (!submitBtn.classList.contains('hidden')) {
             submitBtn.click();
@@ -288,3 +373,5 @@ nextBtn.classList.add('hidden');
 backBtn.classList.add('hidden');
 restartBtn.classList.add('hidden');
 submitBtn.onclick = checkAnswer;
+
+renderHome();
