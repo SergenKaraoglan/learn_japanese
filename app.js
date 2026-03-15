@@ -57,14 +57,106 @@ const scenariosData = {
                 { text: 'you?', color: '#06b6d4' }
             ]
         }
+    ],
+    selfIntro: [
+        {
+            character: 'yuki',
+            text: 'Hajimemashite.',
+            en: 'Nice to meet you.',
+            jpTokens: [{ text: 'Hajimemashite.', color: '#6366f1' }],
+            enTokens: [{ text: 'Nice to meet you.', color: '#6366f1' }]
+        },
+        {
+            character: 'yuki',
+            text: 'Watashi wa Yuki desu.',
+            en: 'I am Yuki.',
+            jpTokens: [
+                { text: 'Watashi', color: '#10b981' },
+                { text: 'wa', color: '#f59e0b' },
+                { text: 'Yuki', color: '#6366f1' },
+                { text: 'desu.', color: '#f59e0b' }
+            ],
+            enTokens: [
+                { text: 'I', color: '#10b981' },
+                { text: 'am', color: '#f59e0b' },
+                { text: 'Yuki.', color: '#6366f1' }
+            ]
+        },
+        {
+            character: 'kenji',
+            text: 'Hajimemashite.',
+            en: 'Nice to meet you.',
+            jpTokens: [{ text: 'Hajimemashite.', color: '#6366f1' }],
+            enTokens: [{ text: 'Nice to meet you.', color: '#6366f1' }]
+        },
+        {
+            character: 'kenji',
+            text: 'Kenji desu.',
+            en: 'I am Kenji.',
+            jpTokens: [
+                { text: 'Kenji', color: '#6366f1' },
+                { text: 'desu.', color: '#f59e0b' }
+            ],
+            enTokens: [
+                { text: 'I am', color: '#f59e0b' },
+                { text: 'Kenji.', color: '#6366f1' }
+            ]
+        },
+        {
+            character: 'yuki',
+            text: 'Yoroshiku onegaishimasu.',
+            en: 'Pleased to meet you.',
+            jpTokens: [
+                { text: 'Yoroshiku', color: '#8b5cf6' },
+                { text: 'onegaishimasu.', color: '#8b5cf6' }
+            ],
+            enTokens: [
+                { text: 'Pleased to', color: '#8b5cf6' },
+                { text: 'meet you.', color: '#8b5cf6' }
+            ]
+        },
+        {
+            character: 'kenji',
+            text: 'Kochira koso, yoroshiku.',
+            en: 'Likewise, nice to meet you.',
+            jpTokens: [
+                { text: 'Kochira', color: '#06b6d4' },
+                { text: 'koso,', color: '#06b6d4' },
+                { text: 'yoroshiku.', color: '#8b5cf6' }
+            ],
+            enTokens: [
+                { text: 'Likewise,', color: '#06b6d4' },
+                { text: 'nice to', color: '#8b5cf6' },
+                { text: 'meet you.', color: '#8b5cf6' }
+            ]
+        }
     ]
 };
+
+const flashcardsData = [
+    { jp: 'Konnichiwa', en: 'Hello' },
+    { jp: 'Arigatou', en: 'Thank you' },
+    { jp: 'Sayounara', en: 'Goodbye' },
+    { jp: 'Sumimasen', en: 'Excuse me' },
+    { jp: 'Onegaishimasu', en: 'Please' },
+    { jp: 'Hajimemashite', en: 'Nice to meet you' },
+    { jp: 'Genki', en: 'Fine' },
+    { jp: 'Ohayou', en: 'Good morning' },
+    { jp: 'Konbanwa', en: 'Good evening' },
+    { jp: 'Oyasumi', en: 'Good night' }
+];
 
 const availableScenarios = [
     {
         id: 'greetings',
         title: 'Greetings',
         description: 'Learn basic greetings and how to ask how someone is doing.',
+        difficulty: 'Beginner'
+    },
+    {
+        id: 'selfIntro',
+        title: 'Self-Introduction',
+        description: 'Learn how to introduce yourself and meet new people.',
         difficulty: 'Beginner'
     }
 ];
@@ -73,6 +165,17 @@ let scenarios = [];
 let currentStep = 0;
 let mode = 'WATCH'; // 'WATCH', 'REPEAT'
 let currentPlayer = 'yuki'; // Who the user is currently playing
+let currentScenarioId = null;
+
+// Progress Tracking
+let completedScenarios = JSON.parse(localStorage.getItem('completedScenarios')) || [];
+
+function saveCompletion(id) {
+    if (!completedScenarios.includes(id)) {
+        completedScenarios.push(id);
+        localStorage.setItem('completedScenarios', JSON.stringify(completedScenarios));
+    }
+}
 
 const homeView = document.getElementById('home-view');
 const lessonView = document.getElementById('lesson-view');
@@ -89,6 +192,18 @@ const submitBtn = document.getElementById('submit-btn');
 const feedback = document.getElementById('feedback');
 const testPrompt = document.getElementById('test-prompt');
 const progressBar = document.getElementById('progress-bar');
+
+// Flashcard Elements
+const flashcardView = document.getElementById('flashcard-view');
+const flashJpText = document.getElementById('flash-jp-text');
+const flashUserInput = document.getElementById('flash-user-input');
+const flashSubmitBtn = document.getElementById('flash-submit-btn');
+const flashFeedback = document.getElementById('flash-feedback');
+const deckCount = document.getElementById('deck-count');
+const showScenariosBtn = document.getElementById('show-scenarios');
+const showFlashcardsBtn = document.getElementById('show-flashcards');
+
+let flashDeck = [...flashcardsData];
 
 const bubbles = {
     yuki: document.getElementById('bubble-yuki'),
@@ -221,6 +336,10 @@ function finishLesson() {
     feedback.className = "feedback success text-large";
     nextBtn.classList.add('hidden');
     backBtn.classList.add('hidden'); // Hide back button on true finish
+
+    if (currentScenarioId) {
+        saveCompletion(currentScenarioId);
+    }
 }
 
 function levenshteinDistance(a, b) {
@@ -242,6 +361,64 @@ function levenshteinDistance(a, b) {
         }
     }
     return matrix[b.length][a.length];
+}
+
+// Flashcard Logic
+function startFlashcards() {
+    homeView.classList.add('hidden');
+    lessonView.classList.add('hidden');
+    flashcardView.classList.remove('hidden');
+    showFlashcard();
+}
+
+function showFlashcard() {
+    if (flashDeck.length === 0) {
+        flashDeck = [...flashcardsData];
+    }
+    const card = flashDeck[0];
+    flashJpText.textContent = card.jp;
+    flashUserInput.value = '';
+    flashFeedback.textContent = '';
+    flashFeedback.className = 'feedback';
+    deckCount.textContent = flashDeck.length;
+    flashUserInput.focus();
+}
+
+function checkFlashcardAnswer() {
+    const val = flashUserInput.value.trim().toLowerCase();
+    const expected = flashDeck[0].en.toLowerCase();
+
+    if (val === expected) {
+        flashFeedback.textContent = 'Correct!';
+        flashFeedback.className = 'feedback success';
+
+        // Spaced repetition: move to bottom
+        const card = flashDeck.shift();
+        flashDeck.push(card);
+
+        setTimeout(showFlashcard, 800);
+    } else {
+        flashFeedback.textContent = `Incorrect. The answer was "${flashDeck[0].en}".`;
+        flashFeedback.className = 'feedback error shake';
+
+        // Spaced repetition: stay at top (already there)
+        setTimeout(() => flashFeedback.classList.remove('shake'), 500);
+    }
+}
+
+function switchMode(target) {
+    showScenariosBtn.classList.remove('active');
+    showFlashcardsBtn.classList.remove('active');
+
+    if (target === 'scenarios') {
+        showScenariosBtn.classList.add('active');
+        flashcardView.classList.add('hidden');
+        lessonView.classList.add('hidden');
+        renderHome();
+    } else {
+        showFlashcardsBtn.classList.add('active');
+        startFlashcards();
+    }
 }
 
 function checkAnswer() {
@@ -281,10 +458,14 @@ function renderHome() {
     scenarioGrid.innerHTML = '';
 
     availableScenarios.forEach(scen => {
+        const isCompleted = completedScenarios.includes(scen.id);
         const card = document.createElement('div');
-        card.className = 'scenario-card';
+        card.className = `scenario-card ${isCompleted ? 'completed' : ''}`;
         card.innerHTML = `
-            <span class="badge">${scen.difficulty}</span>
+            <div class="card-badges">
+                <span class="badge difficulty">${scen.difficulty}</span>
+                ${isCompleted ? '<span class="badge status">✓ Completed</span>' : ''}
+            </div>
             <h3>${scen.title}</h3>
             <p>${scen.description}</p>
         `;
@@ -294,6 +475,7 @@ function renderHome() {
 }
 
 function startLesson(scenarioId) {
+    currentScenarioId = scenarioId;
     scenarios = scenariosData[scenarioId];
     currentStep = 0;
     mode = 'WATCH';
@@ -338,6 +520,19 @@ restartBtn.addEventListener('click', () => {
     submitBtn.classList.remove('hidden');
     submitBtn.onclick = checkAnswer;
     updateUI();
+});
+
+nextBtn.addEventListener('click', () => {
+    currentStep++;
+    updateUI();
+});
+
+showScenariosBtn.addEventListener('click', () => switchMode('scenarios'));
+showFlashcardsBtn.addEventListener('click', () => switchMode('flashcards'));
+
+flashSubmitBtn.addEventListener('click', checkFlashcardAnswer);
+flashUserInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') checkFlashcardAnswer();
 });
 
 exitLessonBtn.addEventListener('click', exitToHome);
