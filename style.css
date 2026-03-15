@@ -205,9 +205,9 @@ body {
 }
 
 .speech-bubble.active {
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    opacity: 1;
+    transform: translate(-50%, -20px) scale(1);
+    pointer-events: auto;
 }
 
 .option-btn.correct {
@@ -730,18 +730,19 @@ input:checked+.slider::before {
 }
 
 .quiz-question {
-    padding: 2.5rem;
+    padding: 0.5rem 1.25rem;
     text-align: center;
-    border-radius: 24px;
-    margin-bottom: 2rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
     position: relative;
     overflow: hidden;
+    max-height: 100px;
 }
 
 .quiz-sentence {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 800;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
     color: var(--text);
     font-family: 'Noto Sans JP', sans-serif;
 }

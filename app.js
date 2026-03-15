@@ -471,8 +471,8 @@ function updateUI() {
         }
     }
 
-    // Auto-play scenario audio if enabled (moved outside mode check)
-    if (scenarioAutoplayEnabled) {
+    // Auto-play scenario audio if enabled (Only in WATCH mode)
+    if (scenarioAutoplayEnabled && mode === 'WATCH') {
         const bubble = bubbles[s.character];
         const btn = bubble.querySelector('.bubble-audio-btn');
         speakJapanese(s.kanji || s.text, btn);
@@ -516,7 +516,7 @@ function finishLesson() {
     testPrompt.textContent = "Congratulations! You've mastered the scenario from both perspectives.";
     userInput.classList.add('hidden');
     submitBtn.classList.add('hidden');
-    feedback.textContent = "Subarashii! (Wonderful!)";
+    feedback.textContent = "Excellent!";
     feedback.className = "feedback success text-large";
     nextBtn.classList.add('hidden');
     backBtn.classList.add('hidden'); // Hide back button on true finish
@@ -864,7 +864,7 @@ function checkQuizAnswer(selected, btn = null) {
 
     if (isCorrect) {
         if (btn) btn.classList.add('correct');
-        quizFeedback.textContent = "Correct! Subarashii!";
+        quizFeedback.textContent = "Correct!";
         quizFeedback.className = "feedback success";
 
         setTimeout(() => {
