@@ -161,6 +161,7 @@ const quizData = [
     {
         sentenceJp: 'Tanaka-san, ___!',
         kanji: '田中さん、こんにちは！',
+        correctJp: 'こんにちは',
         sentenceEn: 'Hello, Mr. Tanaka!',
         correct: 'Konnichiwa',
         options: ['Konnichiwa', 'Sayounara', 'Arigatou', 'Sumimasen']
@@ -168,6 +169,7 @@ const quizData = [
     {
         sentenceJp: 'Hontou ni ___ gozaimasu.',
         kanji: '本当にありがとうございます。',
+        correctJp: 'ありがとう',
         sentenceEn: 'Thank you very much.',
         correct: 'Arigatou',
         options: ['Ohayou', 'Arigatou', 'Oyasumi', 'Genki']
@@ -175,6 +177,7 @@ const quizData = [
     {
         sentenceJp: 'Sumimasen, ___!',
         kanji: 'すみません、お願いします！',
+        correctJp: 'お願いします',
         sentenceEn: 'Excuse me, please!',
         correct: 'Onegaishimasu',
         options: ['Sumimasen', 'Ohayou', 'Onegaishimasu', 'Hajimemashite']
@@ -182,6 +185,7 @@ const quizData = [
     {
         sentenceJp: 'O-namae wa ___ desu ka?',
         kanji: 'お名前は何ですか？',
+        correctJp: '何',
         sentenceEn: 'What is your name?',
         correct: 'Nan',
         options: ['Nan', 'Doko', 'Dare', 'Itsu']
@@ -189,6 +193,7 @@ const quizData = [
     {
         sentenceJp: 'Watashi wa ___ desu.',
         kanji: '私は元気です。',
+        correctJp: '元気',
         sentenceEn: 'I am fine.',
         correct: 'Genki',
         options: ['Samui', 'Genki', 'Atsui', 'Nemui']
@@ -261,15 +266,27 @@ const quizOptions = document.getElementById('quiz-options');
 const quizFeedback = document.getElementById('quiz-feedback');
 const quizProgressBar = document.getElementById('quiz-progress-bar');
 const showQuizBtn = document.getElementById('show-quiz');
-
+const quizSubtitle = document.getElementById('quiz-subtitle');
+const quizInputContainer = document.getElementById('quiz-input-container');
+const quizUserInput = document.getElementById('quiz-user-input');
+const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+const quizSpeechContainer = document.getElementById('quiz-speech-container');
+const quizMicBtn = document.getElementById('quiz-mic-btn');
+const diffButtons = document.querySelectorAll('.diff-btn');
 const showScenariosBtn = document.getElementById('show-scenarios');
 const showFlashcardsBtn = document.getElementById('show-flashcards');
+const showVocabBtn = document.getElementById('show-vocab');
+
+// Vocabulary Elements
+const vocabView = document.getElementById('vocab-view');
+const vocabGrid = document.getElementById('vocab-grid');
 
 let flashDeck = [...flashcardsData];
 
 // Quiz State
 let currentQuizIndex = 0;
 let quizQuestionsOrder = [];
+let quizDifficulty = 'easy';
 
 // Flashcard Scoring
 let flashScores = JSON.parse(localStorage.getItem('flashScores')) || {};
@@ -649,6 +666,13 @@ function switchMode(newMode) {
     document.getElementById('show-scenarios').classList.remove('active');
     document.getElementById('show-flashcards').classList.remove('active');
     document.getElementById('show-quiz').classList.remove('active');
+    document.getElementById('show-vocab').classList.remove('active');
+
+    homeView.classList.add('hidden');
+    lessonView.classList.add('hidden');
+    flashcardView.classList.add('hidden');
+    quizView.classList.add('hidden');
+    vocabView.classList.add('hidden');
 
     if (newMode === 'scenarios') {
         renderHome();
@@ -662,13 +686,65 @@ function switchMode(newMode) {
         quizView.classList.remove('hidden');
         document.getElementById('show-quiz').classList.add('active');
         startQuiz();
+    } else if (newMode === 'vocabulary') {
+        vocabView.classList.remove('hidden');
+        document.getElementById('show-vocab').classList.add('active');
+        renderVocabulary();
     }
+}
+
+function renderVocabulary() {
+    vocabGrid.innerHTML = '';
+    flashcardsData.forEach(word => {
+        const card = document.createElement('div');
+        card.className = 'vocab-card';
+        card.innerHTML = `
+            <div class="vocab-audio-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+            </div>
+            <div class="vocab-jp">${word.kanji || word.jp}</div>
+            <div class="vocab-romaji">${word.jp}</div>
+            <div class="vocab-en">${word.en}</div>
+        `;
+        card.onclick = () => speakJapanese(word.kanji || word.jp);
+        vocabGrid.appendChild(card);
+    });
 }
 
 function startQuiz() {
     currentQuizIndex = 0;
     quizQuestionsOrder = [...quizData].sort(() => Math.random() - 0.5);
+    updateQuizDifficultyUI();
     showQuizQuestion();
+}
+
+function updateQuizDifficultyUI() {
+    diffButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.diff === quizDifficulty);
+    });
+
+    if (quizDifficulty === 'easy') {
+        quizSubtitle.textContent = "Fill in the blank with the correct word";
+        quizOptions.classList.remove('hidden');
+        quizInputContainer.classList.add('hidden');
+        quizSpeechContainer.classList.add('hidden');
+    } else if (quizDifficulty === 'normal') {
+        quizSubtitle.textContent = "Type the missing word in Romaji";
+        quizOptions.classList.add('hidden');
+        quizInputContainer.classList.remove('hidden');
+        quizSpeechContainer.classList.add('hidden');
+        quizUserInput.value = '';
+        quizUserInput.focus();
+    } else if (quizDifficulty === 'hard') {
+        quizSubtitle.textContent = "Speak the missing word into the microphone";
+        quizOptions.classList.add('hidden');
+        quizInputContainer.classList.add('hidden');
+        quizSpeechContainer.classList.remove('hidden');
+    }
 }
 
 function showQuizQuestion() {
@@ -689,48 +765,123 @@ function showQuizQuestion() {
     const progress = (currentQuizIndex / quizQuestionsOrder.length) * 100;
     quizProgressBar.style.width = `${progress}%`;
 
-    // Clear and render options
-    quizOptions.innerHTML = '';
-    const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
-
-    shuffledOptions.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.textContent = opt;
-        btn.onclick = () => checkQuizAnswer(opt, btn);
-        quizOptions.appendChild(btn);
-    });
+    if (quizDifficulty === 'easy') {
+        quizOptions.innerHTML = '';
+        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+        shuffledOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.onclick = () => checkQuizAnswer(opt, btn);
+            quizOptions.appendChild(btn);
+        });
+    } else if (quizDifficulty === 'normal') {
+        quizUserInput.value = '';
+        quizUserInput.focus();
+        quizSubmitBtn.onclick = () => checkQuizAnswer(quizUserInput.value.trim());
+    } else if (quizDifficulty === 'hard') {
+        initSpeechRecognition();
+    }
 }
 
-function checkQuizAnswer(selected, btn) {
+let recognition = null;
+function initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        quizFeedback.textContent = "Speech recognition is not supported in this browser.";
+        quizFeedback.className = "feedback error";
+        return;
+    }
+
+    if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            quizMicBtn.classList.add('recording');
+            document.querySelector('.mic-status').textContent = 'Listening...';
+        };
+
+        recognition.onend = () => {
+            quizMicBtn.classList.remove('recording');
+            document.querySelector('.mic-status').textContent = 'Click to speak';
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            checkQuizAnswer(transcript);
+        };
+
+        recognition.onerror = (event) => {
+            if (event.error !== 'no-speech') {
+                quizFeedback.textContent = "Speech error. Try again!";
+                quizFeedback.className = "feedback error";
+            }
+        };
+    }
+
+    quizMicBtn.onclick = () => {
+        try {
+            recognition.start();
+        } catch (e) {
+            // Already started
+        }
+    };
+}
+
+// Difficulty changes
+diffButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        quizDifficulty = btn.dataset.diff;
+        startQuiz(); // Restart with new difficulty
+    });
+});
+
+function checkQuizAnswer(selected, btn = null) {
     const q = quizQuestionsOrder[currentQuizIndex];
-    const allBtns = quizOptions.querySelectorAll('.option-btn');
 
-    // Disable all buttons after selection
-    allBtns.forEach(b => b.style.pointerEvents = 'none');
+    let isCorrect = false;
+    const cleanSelected = selected.toLowerCase().replace(/[!,?.]/g, '').trim();
 
-    // Play pronunciation for feedback
+    if (quizDifficulty === 'hard') {
+        // Recognition returns Japanese script. Compare against correctJp
+        const cleanCorrectJp = q.correctJp.replace(/[!,?.]/g, '').trim();
+        isCorrect = cleanSelected === cleanCorrectJp || cleanSelected.includes(cleanCorrectJp);
+    } else {
+        const cleanCorrectRomaji = q.correct.toLowerCase().replace(/[!,?.]/g, '').trim();
+        isCorrect = cleanSelected === cleanCorrectRomaji;
+    }
+
+    if (quizDifficulty === 'easy' && btn) {
+        const allBtns = quizOptions.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.style.pointerEvents = 'none');
+    }
+
+    // Play pronunciation as feedback
     speakJapanese(q.kanji);
 
-    if (selected === q.correct) {
-        btn.classList.add('correct');
+    if (isCorrect) {
+        if (btn) btn.classList.add('correct');
         quizFeedback.textContent = "Correct! Subarashii!";
         quizFeedback.className = "feedback success";
 
-        // Wait a moment and show next
         setTimeout(() => {
             currentQuizIndex++;
             showQuizQuestion();
         }, 1500);
     } else {
-        btn.classList.add('wrong');
-        quizFeedback.textContent = `Not quite. The correct answer was "${q.correct}".`;
+        if (btn) btn.classList.add('wrong');
+        quizFeedback.textContent = `Not quite. The correct answer was "${quizDifficulty === 'hard' ? q.correctJp : q.correct}".`;
         quizFeedback.className = "feedback error";
 
-        // Highlight the correct one
-        allBtns.forEach(b => {
-            if (b.textContent === q.correct) b.classList.add('correct');
-        });
+        if (quizDifficulty === 'easy') {
+            const allBtns = quizOptions.querySelectorAll('.option-btn');
+            allBtns.forEach(b => {
+                if (b.textContent === q.correct) b.classList.add('correct');
+            });
+        }
 
         setTimeout(() => {
             currentQuizIndex++;
@@ -848,6 +999,7 @@ nextBtn.addEventListener('click', () => {
 showScenariosBtn.addEventListener('click', () => switchMode('scenarios'));
 showFlashcardsBtn.addEventListener('click', () => switchMode('flashcards'));
 showQuizBtn.addEventListener('click', () => switchMode('quiz'));
+showVocabBtn.addEventListener('click', () => switchMode('vocabulary'));
 
 // Scenario Audio Events
 document.querySelectorAll('.bubble-audio-btn').forEach(btn => {
@@ -881,6 +1033,10 @@ flashAutoplayToggle.addEventListener('change', (e) => {
 flashSubmitBtn.addEventListener('click', checkFlashcardAnswer);
 flashUserInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') checkFlashcardAnswer();
+});
+
+quizUserInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') checkQuizAnswer(quizUserInput.value.trim());
 });
 
 exitLessonBtn.addEventListener('click', exitToHome);

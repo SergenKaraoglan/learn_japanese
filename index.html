@@ -27,6 +27,7 @@
                             <button id="show-scenarios" class="switch-btn active">Scenarios</button>
                             <button id="show-flashcards" class="switch-btn">Flashcards</button>
                             <button id="show-quiz" class="switch-btn">Quiz</button>
+                            <button id="show-vocab" class="switch-btn">Vocabulary</button>
                         </div>
                     </div>
                 </nav>
@@ -159,7 +160,12 @@
                 <div id="quiz-view" class="hidden">
                     <header class="view-header">
                         <h2>Japanese <span class="accent">Quiz</span></h2>
-                        <p class="subtitle">Fill in the blank with the correct word</p>
+                        <div class="difficulty-group">
+                            <button class="diff-btn active" data-diff="easy">Easy</button>
+                            <button class="diff-btn" data-diff="normal">Normal</button>
+                            <button class="diff-btn" data-diff="hard">Hard</button>
+                        </div>
+                        <p class="subtitle" id="quiz-subtitle">Fill in the blank with the correct word</p>
                     </header>
 
                     <div class="quiz-container">
@@ -168,17 +174,51 @@
                             <div class="quiz-translation" id="quiz-sentence-en">Translation</div>
                         </div>
 
-                        <div class="quiz-options" id="quiz-options">
-                            <!-- Options will be injected here -->
+                        <div id="quiz-interaction-container">
+                            <!-- Interaction (Options, Input, or Mic) will be injected here -->
+                            <div class="quiz-options" id="quiz-options"></div>
+
+                            <div id="quiz-input-container" class="hidden">
+                                <div class="input-group">
+                                    <input type="text" id="quiz-user-input" placeholder="Type the answer..."
+                                        autocomplete="off">
+                                    <button id="quiz-submit-btn" class="glow-button">Check</button>
+                                </div>
+                            </div>
+
+                            <div id="quiz-speech-container" class="hidden">
+                                <button id="quiz-mic-btn" class="mic-btn">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                                    </svg>
+                                    <span class="mic-status">Click to speak</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <div id="quiz-feedback" class="feedback"></div>
 
                     <div class="quiz-progress-wrapper">
-                        <div id="quiz-progress-container" class="progress-container">
-                            <div id="quiz-progress-bar" class="progress-bar"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="quiz-progress-bar"></div>
                         </div>
+                        <div id="quiz-feedback" class="feedback"></div>
+                    </div>
+                </div>
+
+                <!-- Vocabulary View -->
+                <div id="vocab-view" class="hidden">
+                    <header class="view-header">
+                        <h2>Japanese <span class="accent">Vocabulary</span></h2>
+                        <p class="subtitle">Click any word to hear its pronunciation</p>
+                    </header>
+                    <div id="vocab-grid" class="vocab-grid">
+                        <!-- Word cards will be injected here -->
                     </div>
                 </div>
             </div>
@@ -188,3 +228,4 @@
 </body>
 
 </html>
+```
