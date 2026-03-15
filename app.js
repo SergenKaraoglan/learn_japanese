@@ -308,11 +308,13 @@ if (flashAutoplayToggle) {
 function speakJapanese(text, activeBtn = null) {
     if (!window.speechSynthesis) return;
 
-    // Stop any current speech
+    // Cancel existing speech only if new speech is requested
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ja-JP';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
 
     // Voices are loaded asynchronously
     const voices = window.speechSynthesis.getVoices();
@@ -471,8 +473,9 @@ function updateUI() {
         }
     }
 
-    // Auto-play scenario audio if enabled (Only in WATCH mode)
-    if (scenarioAutoplayEnabled && mode === 'WATCH') {
+    // Auto-play scenario audio if enabled
+    const isPlayerTurn = (mode === 'REPEAT' && s.character === currentPlayer);
+    if (scenarioAutoplayEnabled && (mode === 'WATCH' || !isPlayerTurn)) {
         const bubble = bubbles[s.character];
         const btn = bubble.querySelector('.bubble-audio-btn');
         speakJapanese(s.kanji || s.text, btn);
@@ -899,8 +902,11 @@ function checkAnswer() {
         feedback.textContent = 'Correct!';
         feedback.className = 'feedback success';
 
-        // Show the actual text in the bubble
+        // Play answer feedback
         const s = scenarios[currentStep];
+        speakJapanese(s.kanji || s.text);
+
+        // Show the actual text in the bubble
         const bubble = bubbles[s.character];
         bubble.querySelector('.jp-text').textContent = s.text;
 
@@ -1010,6 +1016,11 @@ document.querySelectorAll('.bubble-audio-btn').forEach(btn => {
         }
     });
 });
+
+// Robust voice initialization
+window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+};
 
 if (scenarioAutoplayToggle) {
     scenarioAutoplayToggle.addEventListener('change', (e) => {
