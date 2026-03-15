@@ -3,6 +3,7 @@ const scenariosData = {
         {
             character: 'yuki',
             text: 'Konnichiwa!',
+            kanji: 'こんにちは！',
             en: 'Hello!',
             jpTokens: [{ text: 'Konnichiwa!', color: '#6366f1' }],
             enTokens: [{ text: 'Hello!', color: '#6366f1' }]
@@ -10,6 +11,7 @@ const scenariosData = {
         {
             character: 'kenji',
             text: 'Konnichiwa!',
+            kanji: 'こんにちは！',
             en: 'Hello!',
             jpTokens: [{ text: 'Konnichiwa!', color: '#6366f1' }],
             enTokens: [{ text: 'Hello!', color: '#6366f1' }]
@@ -17,6 +19,7 @@ const scenariosData = {
         {
             character: 'kenji',
             text: 'O-genki desu ka?',
+            kanji: 'お元気ですか？',
             en: 'How are you?',
             jpTokens: [
                 { text: 'O-genki', color: '#10b981' },
@@ -32,6 +35,7 @@ const scenariosData = {
         {
             character: 'yuki',
             text: 'Hai, genki desu.',
+            kanji: 'はい、元気です。',
             en: 'Yes, I am fine.',
             jpTokens: [
                 { text: 'Hai,', color: '#8b5cf6' },
@@ -47,6 +51,7 @@ const scenariosData = {
         {
             character: 'yuki',
             text: 'Anata wa?',
+            kanji: 'あなたは？',
             en: 'And you?',
             jpTokens: [
                 { text: 'Anata', color: '#06b6d4' },
@@ -62,6 +67,7 @@ const scenariosData = {
         {
             character: 'yuki',
             text: 'Hajimemashite.',
+            kanji: 'はじめまして。',
             en: 'Nice to meet you.',
             jpTokens: [{ text: 'Hajimemashite.', color: '#6366f1' }],
             enTokens: [{ text: 'Nice to meet you.', color: '#6366f1' }]
@@ -69,6 +75,7 @@ const scenariosData = {
         {
             character: 'yuki',
             text: 'Watashi wa Yuki desu.',
+            kanji: '私はユキです。',
             en: 'I am Yuki.',
             jpTokens: [
                 { text: 'Watashi', color: '#10b981' },
@@ -85,6 +92,7 @@ const scenariosData = {
         {
             character: 'kenji',
             text: 'Hajimemashite.',
+            kanji: 'はじめまして。',
             en: 'Nice to meet you.',
             jpTokens: [{ text: 'Hajimemashite.', color: '#6366f1' }],
             enTokens: [{ text: 'Nice to meet you.', color: '#6366f1' }]
@@ -92,6 +100,7 @@ const scenariosData = {
         {
             character: 'kenji',
             text: 'Kenji desu.',
+            kanji: 'ケンジです。',
             en: 'I am Kenji.',
             jpTokens: [
                 { text: 'Kenji', color: '#6366f1' },
@@ -105,6 +114,7 @@ const scenariosData = {
         {
             character: 'yuki',
             text: 'Yoroshiku onegaishimasu.',
+            kanji: 'よろしくお願いします。',
             en: 'Pleased to meet you.',
             jpTokens: [
                 { text: 'Yoroshiku', color: '#8b5cf6' },
@@ -118,6 +128,7 @@ const scenariosData = {
         {
             character: 'kenji',
             text: 'Kochira koso, yoroshiku.',
+            kanji: 'こちらこそ、よろしく。',
             en: 'Likewise, nice to meet you.',
             jpTokens: [
                 { text: 'Kochira', color: '#06b6d4' },
@@ -144,6 +155,44 @@ const flashcardsData = [
     { jp: 'Ohayou', kanji: 'おはよう', en: 'Good morning' },
     { jp: 'Konbanwa', kanji: 'こんばんは', en: 'Good evening' },
     { jp: 'Oyasumi', kanji: 'おやすみ', en: 'Good night' }
+];
+
+const quizData = [
+    {
+        sentenceJp: 'Tanaka-san, ___!',
+        kanji: '田中さん、こんにちは！',
+        sentenceEn: 'Hello, Mr. Tanaka!',
+        correct: 'Konnichiwa',
+        options: ['Konnichiwa', 'Sayounara', 'Arigatou', 'Sumimasen']
+    },
+    {
+        sentenceJp: 'Hontou ni ___ gozaimasu.',
+        kanji: '本当にありがとうございます。',
+        sentenceEn: 'Thank you very much.',
+        correct: 'Arigatou',
+        options: ['Ohayou', 'Arigatou', 'Oyasumi', 'Genki']
+    },
+    {
+        sentenceJp: 'Sumimasen, ___!',
+        kanji: 'すみません、お願いします！',
+        sentenceEn: 'Excuse me, please!',
+        correct: 'Onegaishimasu',
+        options: ['Sumimasen', 'Ohayou', 'Onegaishimasu', 'Hajimemashite']
+    },
+    {
+        sentenceJp: 'O-namae wa ___ desu ka?',
+        kanji: 'お名前は何ですか？',
+        sentenceEn: 'What is your name?',
+        correct: 'Nan',
+        options: ['Nan', 'Doko', 'Dare', 'Itsu']
+    },
+    {
+        sentenceJp: 'Watashi wa ___ desu.',
+        kanji: '私は元気です。',
+        sentenceEn: 'I am fine.',
+        correct: 'Genki',
+        options: ['Samui', 'Genki', 'Atsui', 'Nemui']
+    }
 ];
 
 const availableScenarios = [
@@ -203,24 +252,43 @@ const flashScoreBadge = document.getElementById('flash-score');
 const flashAudioBtn = document.getElementById('flash-audio-btn');
 const flashAutoplayToggle = document.getElementById('flash-autoplay-toggle');
 const deckCount = document.getElementById('deck-count');
+
+// Quiz Elements
+const quizView = document.getElementById('quiz-view');
+const quizSentenceJp = document.getElementById('quiz-sentence-jp');
+const quizSentenceEn = document.getElementById('quiz-sentence-en');
+const quizOptions = document.getElementById('quiz-options');
+const quizFeedback = document.getElementById('quiz-feedback');
+const quizProgressBar = document.getElementById('quiz-progress-bar');
+const showQuizBtn = document.getElementById('show-quiz');
+
 const showScenariosBtn = document.getElementById('show-scenarios');
 const showFlashcardsBtn = document.getElementById('show-flashcards');
 
 let flashDeck = [...flashcardsData];
 
+// Quiz State
+let currentQuizIndex = 0;
+let quizQuestionsOrder = [];
+
 // Flashcard Scoring
 let flashScores = JSON.parse(localStorage.getItem('flashScores')) || {};
 let lastShownCardJp = null;
 let autoplayEnabled = localStorage.getItem('flashAutoplay') !== 'false';
+let scenarioAutoplayEnabled = localStorage.getItem('scenarioAutoplay') !== 'false';
 const lastShownTimes = {}; // Track when each word was last shown in memory
 const COOLDOWN_MS = 60000; // 1 minute
 
-// Initialize Autoplay Toggle
+const scenarioAutoplayToggle = document.getElementById('scenario-autoplay-toggle');
+if (scenarioAutoplayToggle) {
+    scenarioAutoplayToggle.checked = scenarioAutoplayEnabled;
+}
+
 if (flashAutoplayToggle) {
     flashAutoplayToggle.checked = autoplayEnabled;
 }
 
-function speakJapanese(text) {
+function speakJapanese(text, activeBtn = null) {
     if (!window.speechSynthesis) return;
 
     // Stop any current speech
@@ -252,11 +320,18 @@ function speakJapanese(text) {
     utterance.rate = 0.9; // Slightly slower for better clarity
     utterance.pitch = 1.0;
 
-    utterance.onstart = () => flashAudioBtn.classList.add('playing');
-    utterance.onend = () => flashAudioBtn.classList.remove('playing');
+    utterance.onstart = () => {
+        if (activeBtn) activeBtn.classList.add('playing');
+        else if (flashAudioBtn) flashAudioBtn.classList.add('playing'); // Check if flashAudioBtn exists
+    };
+    utterance.onend = () => {
+        if (activeBtn) activeBtn.classList.remove('playing');
+        else if (flashAudioBtn) flashAudioBtn.classList.remove('playing');
+    };
     utterance.onerror = (e) => {
         console.error('Speech synthesis error:', e);
-        flashAudioBtn.classList.remove('playing');
+        if (activeBtn) activeBtn.classList.remove('playing');
+        else if (flashAudioBtn) flashAudioBtn.classList.remove('playing');
     };
 
     window.speechSynthesis.speak(utterance);
@@ -377,6 +452,13 @@ function updateUI() {
             testPhase.classList.add('hidden');
             setTimeout(() => bubble.classList.add('active'), 100);
         }
+    }
+
+    // Auto-play scenario audio if enabled (moved outside mode check)
+    if (scenarioAutoplayEnabled) {
+        const bubble = bubbles[s.character];
+        const btn = bubble.querySelector('.bubble-audio-btn');
+        speakJapanese(s.kanji || s.text, btn);
     }
 }
 
@@ -558,18 +640,102 @@ function checkFlashcardAnswer() {
     }
 }
 
-function switchMode(target) {
-    showScenariosBtn.classList.remove('active');
-    showFlashcardsBtn.classList.remove('active');
+function switchMode(newMode) {
+    homeView.classList.add('hidden');
+    lessonView.classList.add('hidden');
+    flashcardView.classList.add('hidden');
+    quizView.classList.add('hidden');
 
-    if (target === 'scenarios') {
-        showScenariosBtn.classList.add('active');
-        flashcardView.classList.add('hidden');
-        lessonView.classList.add('hidden');
+    document.getElementById('show-scenarios').classList.remove('active');
+    document.getElementById('show-flashcards').classList.remove('active');
+    document.getElementById('show-quiz').classList.remove('active');
+
+    if (newMode === 'scenarios') {
         renderHome();
+        homeView.classList.remove('hidden');
+        document.getElementById('show-scenarios').classList.add('active');
+    } else if (newMode === 'flashcards') {
+        flashcardView.classList.remove('hidden');
+        document.getElementById('show-flashcards').classList.add('active');
+        showFlashcard();
+    } else if (newMode === 'quiz') {
+        quizView.classList.remove('hidden');
+        document.getElementById('show-quiz').classList.add('active');
+        startQuiz();
+    }
+}
+
+function startQuiz() {
+    currentQuizIndex = 0;
+    quizQuestionsOrder = [...quizData].sort(() => Math.random() - 0.5);
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    if (currentQuizIndex >= quizQuestionsOrder.length) {
+        quizFeedback.textContent = "Quiz Complete! Fantastic work.";
+        quizFeedback.className = "feedback success";
+        setTimeout(() => switchMode('scenarios'), 3000);
+        return;
+    }
+
+    const q = quizQuestionsOrder[currentQuizIndex];
+    quizSentenceJp.textContent = q.sentenceJp;
+    quizSentenceEn.textContent = q.sentenceEn;
+    quizFeedback.textContent = "";
+    quizFeedback.className = "feedback";
+
+    // Update Progress
+    const progress = (currentQuizIndex / quizQuestionsOrder.length) * 100;
+    quizProgressBar.style.width = `${progress}%`;
+
+    // Clear and render options
+    quizOptions.innerHTML = '';
+    const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+
+    shuffledOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = opt;
+        btn.onclick = () => checkQuizAnswer(opt, btn);
+        quizOptions.appendChild(btn);
+    });
+}
+
+function checkQuizAnswer(selected, btn) {
+    const q = quizQuestionsOrder[currentQuizIndex];
+    const allBtns = quizOptions.querySelectorAll('.option-btn');
+
+    // Disable all buttons after selection
+    allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+    // Play pronunciation for feedback
+    speakJapanese(q.kanji);
+
+    if (selected === q.correct) {
+        btn.classList.add('correct');
+        quizFeedback.textContent = "Correct! Subarashii!";
+        quizFeedback.className = "feedback success";
+
+        // Wait a moment and show next
+        setTimeout(() => {
+            currentQuizIndex++;
+            showQuizQuestion();
+        }, 1500);
     } else {
-        showFlashcardsBtn.classList.add('active');
-        startFlashcards();
+        btn.classList.add('wrong');
+        quizFeedback.textContent = `Not quite. The correct answer was "${q.correct}".`;
+        quizFeedback.className = "feedback error";
+
+        // Highlight the correct one
+        allBtns.forEach(b => {
+            if (b.textContent === q.correct) b.classList.add('correct');
+        });
+
+        setTimeout(() => {
+            currentQuizIndex++;
+            showQuizQuestion();
+        }, 2500);
     }
 }
 
@@ -681,6 +847,24 @@ nextBtn.addEventListener('click', () => {
 
 showScenariosBtn.addEventListener('click', () => switchMode('scenarios'));
 showFlashcardsBtn.addEventListener('click', () => switchMode('flashcards'));
+showQuizBtn.addEventListener('click', () => switchMode('quiz'));
+
+// Scenario Audio Events
+document.querySelectorAll('.bubble-audio-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const scenario = scenarios[currentStep];
+        if (scenario) {
+            speakJapanese(scenario.kanji || scenario.text, btn);
+        }
+    });
+});
+
+if (scenarioAutoplayToggle) {
+    scenarioAutoplayToggle.addEventListener('change', (e) => {
+        scenarioAutoplayEnabled = e.target.checked;
+        localStorage.setItem('scenarioAutoplay', scenarioAutoplayEnabled);
+    });
+}
 
 // Flashcard Audio Events
 flashAudioBtn.addEventListener('click', () => {

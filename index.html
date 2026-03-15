@@ -20,11 +20,14 @@
             <div id="game-container" class="glass">
                 <nav class="app-nav">
                     <div class="brand">
-                        <h2>Nihongo <span class="accent">Master</span></h2>
+                        <h2>Learn <span class="accent">Japanese</span></h2>
                     </div>
-                    <div class="nav-toggle">
-                        <button id="show-scenarios" class="active">Scenarios</button>
-                        <button id="show-flashcards">Flashcards</button>
+                    <div class="mode-switcher">
+                        <div class="switch-container">
+                            <button id="show-scenarios" class="switch-btn active">Scenarios</button>
+                            <button id="show-flashcards" class="switch-btn">Flashcards</button>
+                            <button id="show-quiz" class="switch-btn">Quiz</button>
+                        </div>
                     </div>
                 </nav>
 
@@ -45,6 +48,13 @@
                         <div id="progress-container">
                             <div id="progress-bar"></div>
                         </div>
+                        <div class="scenario-settings">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="scenario-autoplay-toggle" checked>
+                                <span class="slider"></span>
+                                <span class="label-text">Auto-play audio</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div id="character-stage">
@@ -52,6 +62,13 @@
                             <div class="char-label">Yuki</div>
                             <img src="yuki.png" alt="Yuki" id="yuki-img">
                             <div class="speech-bubble" id="bubble-yuki">
+                                <button class="bubble-audio-btn" title="Hear Pronunciation">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                    </svg>
+                                </button>
                                 <p class="jp-text"></p>
                                 <p class="en-text"></p>
                             </div>
@@ -60,6 +77,13 @@
                             <div class="char-label">Kenji</div>
                             <img src="kenji.png" alt="Kenji" id="kenji-img">
                             <div class="speech-bubble" id="bubble-kenji">
+                                <button class="bubble-audio-btn" title="Hear Pronunciation">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                    </svg>
+                                </button>
                                 <p class="jp-text"></p>
                                 <p class="en-text"></p>
                             </div>
@@ -128,6 +152,33 @@
 
                     <div class="deck-stats">
                         <p>Words in deck: <span id="deck-count">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Quiz View -->
+                <div id="quiz-view" class="hidden">
+                    <header class="view-header">
+                        <h2>Japanese <span class="accent">Quiz</span></h2>
+                        <p class="subtitle">Fill in the blank with the correct word</p>
+                    </header>
+
+                    <div class="quiz-container">
+                        <div class="quiz-question glass">
+                            <div class="quiz-sentence" id="quiz-sentence-jp">___</div>
+                            <div class="quiz-translation" id="quiz-sentence-en">Translation</div>
+                        </div>
+
+                        <div class="quiz-options" id="quiz-options">
+                            <!-- Options will be injected here -->
+                        </div>
+                    </div>
+
+                    <div id="quiz-feedback" class="feedback"></div>
+
+                    <div class="quiz-progress-wrapper">
+                        <div id="quiz-progress-container" class="progress-container">
+                            <div id="quiz-progress-bar" class="progress-bar"></div>
+                        </div>
                     </div>
                 </div>
             </div>
