@@ -134,16 +134,16 @@ const scenariosData = {
 };
 
 const flashcardsData = [
-    { jp: 'Konnichiwa', en: 'Hello' },
-    { jp: 'Arigatou', en: 'Thank you' },
-    { jp: 'Sayounara', en: 'Goodbye' },
-    { jp: 'Sumimasen', en: 'Excuse me' },
-    { jp: 'Onegaishimasu', en: 'Please' },
-    { jp: 'Hajimemashite', en: 'Nice to meet you' },
-    { jp: 'Genki', en: 'Fine' },
-    { jp: 'Ohayou', en: 'Good morning' },
-    { jp: 'Konbanwa', en: 'Good evening' },
-    { jp: 'Oyasumi', en: 'Good night' }
+    { jp: 'Konnichiwa', kanji: 'こんにちは', en: 'Hello' },
+    { jp: 'Arigatou', kanji: 'ありがとう', en: 'Thank you' },
+    { jp: 'Sayounara', kanji: 'さようなら', en: 'Goodbye' },
+    { jp: 'Sumimasen', kanji: 'すみません', en: 'Excuse me' },
+    { jp: 'Onegaishimasu', kanji: 'お願いします', en: 'Please' },
+    { jp: 'Hajimemashite', kanji: 'はじめまして', en: 'Nice to meet you' },
+    { jp: 'Genki', kanji: '元気', en: 'Fine' },
+    { jp: 'Ohayou', kanji: 'おはよう', en: 'Good morning' },
+    { jp: 'Konbanwa', kanji: 'こんばんは', en: 'Good evening' },
+    { jp: 'Oyasumi', kanji: 'おやすみ', en: 'Good night' }
 ];
 
 const availableScenarios = [
@@ -212,6 +212,8 @@ let flashDeck = [...flashcardsData];
 let flashScores = JSON.parse(localStorage.getItem('flashScores')) || {};
 let lastShownCardJp = null;
 let autoplayEnabled = localStorage.getItem('flashAutoplay') !== 'false';
+const lastShownTimes = {}; // Track when each word was last shown in memory
+const COOLDOWN_MS = 60000; // 1 minute
 
 // Initialize Autoplay Toggle
 if (flashAutoplayToggle) {
@@ -227,13 +229,35 @@ function speakJapanese(text) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ja-JP';
 
-    // Find a Japanese voice
+    // Voices are loaded asynchronously
     const voices = window.speechSynthesis.getVoices();
-    const jaVoice = voices.find(v => v.lang.includes('ja'));
-    if (jaVoice) utterance.voice = jaVoice;
+
+    // Selection Strategy:
+    // 1. Look for 'Kyoko' (Common high-quality macOS voice)
+    // 2. Look for any 'ja-JP' native voice
+    // 3. Look for any 'ja' voice
+
+    let voice = voices.find(v => v.name.includes('Kyoko')) ||
+        voices.find(v => v.lang === 'ja-JP' && !v.localService) || // Prefer online high-quality if any
+        voices.find(v => v.lang === 'ja-JP') ||
+        voices.find(v => v.lang.includes('ja'));
+
+    if (voice) {
+        utterance.voice = voice;
+        // console.log(`Selected voice: ${voice.name}`);
+    } else {
+        // console.warn('No Japanese voice found, falling back to browser defaults.');
+    }
+
+    utterance.rate = 0.9; // Slightly slower for better clarity
+    utterance.pitch = 1.0;
 
     utterance.onstart = () => flashAudioBtn.classList.add('playing');
     utterance.onend = () => flashAudioBtn.classList.remove('playing');
+    utterance.onerror = (e) => {
+        console.error('Speech synthesis error:', e);
+        flashAudioBtn.classList.remove('playing');
+    };
 
     window.speechSynthesis.speak(utterance);
 }
@@ -438,16 +462,52 @@ function showFlashcard() {
         flashDeck = [...flashcardsData];
     }
 
-    // Prevent back-to-back repeats if possible
-    if (flashDeck.length > 1 && flashDeck[0].jp === lastShownCardJp) {
-        // Swap the top card with the second one
-        const temp = flashDeck[0];
-        flashDeck[0] = flashDeck[1];
-        flashDeck[1] = temp;
+    const now = Date.now();
+    let cardIndex = 0;
+
+    // Search for the best candidate considering cooldown
+    // Iterate through the sorted deck (best to worst ratio)
+    for (let i = 0; i < flashDeck.length; i++) {
+        const wordJp = flashDeck[i].jp;
+        const lastShown = lastShownTimes[wordJp] || 0;
+
+        // Pick the first one that satisfies cooldown AND isn't the immediate repeat
+        if ((now - lastShown) >= COOLDOWN_MS && wordJp !== lastShownCardJp) {
+            cardIndex = i;
+            break;
+        }
+    }
+
+    // If no candidate satisfies cooldown, pick the one shown longest ago
+    if (cardIndex === 0 && flashDeck.length > 1) {
+        const wordJp = flashDeck[0].jp;
+        const lastShown = lastShownTimes[wordJp] || 0;
+
+        if ((now - lastShown) < COOLDOWN_MS || wordJp === lastShownCardJp) {
+            // Find the word with the smallest timestamp (oldest)
+            let oldestIndex = 0;
+            let oldestTime = Infinity;
+
+            for (let i = 0; i < flashDeck.length; i++) {
+                const t = lastShownTimes[flashDeck[i].jp] || 0;
+                if (t < oldestTime && flashDeck[i].jp !== lastShownCardJp) {
+                    oldestTime = t;
+                    oldestIndex = i;
+                }
+            }
+            cardIndex = oldestIndex;
+        }
+    }
+
+    // Move the selected candidate to the top if it's not already there
+    if (cardIndex !== 0) {
+        const [selected] = flashDeck.splice(cardIndex, 1);
+        flashDeck.unshift(selected);
     }
 
     const card = flashDeck[0];
     lastShownCardJp = card.jp;
+    lastShownTimes[card.jp] = now;
 
     flashJpText.textContent = card.jp;
     flashUserInput.value = '';
@@ -463,7 +523,7 @@ function showFlashcard() {
 
     // Auto-play audio if enabled
     if (autoplayEnabled) {
-        speakJapanese(card.jp);
+        speakJapanese(card.kanji || card.jp);
     }
 }
 
@@ -625,7 +685,7 @@ showFlashcardsBtn.addEventListener('click', () => switchMode('flashcards'));
 // Flashcard Audio Events
 flashAudioBtn.addEventListener('click', () => {
     if (flashDeck.length > 0) {
-        speakJapanese(flashDeck[0].jp);
+        speakJapanese(flashDeck[0].kanji || flashDeck[0].jp);
     }
 });
 
