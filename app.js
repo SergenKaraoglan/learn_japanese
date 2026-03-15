@@ -199,11 +199,72 @@ const flashJpText = document.getElementById('flash-jp-text');
 const flashUserInput = document.getElementById('flash-user-input');
 const flashSubmitBtn = document.getElementById('flash-submit-btn');
 const flashFeedback = document.getElementById('flash-feedback');
+const flashScoreBadge = document.getElementById('flash-score');
+const flashAudioBtn = document.getElementById('flash-audio-btn');
+const flashAutoplayToggle = document.getElementById('flash-autoplay-toggle');
 const deckCount = document.getElementById('deck-count');
 const showScenariosBtn = document.getElementById('show-scenarios');
 const showFlashcardsBtn = document.getElementById('show-flashcards');
 
 let flashDeck = [...flashcardsData];
+
+// Flashcard Scoring
+let flashScores = JSON.parse(localStorage.getItem('flashScores')) || {};
+let lastShownCardJp = null;
+let autoplayEnabled = localStorage.getItem('flashAutoplay') !== 'false';
+
+// Initialize Autoplay Toggle
+if (flashAutoplayToggle) {
+    flashAutoplayToggle.checked = autoplayEnabled;
+}
+
+function speakJapanese(text) {
+    if (!window.speechSynthesis) return;
+
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ja-JP';
+
+    // Find a Japanese voice
+    const voices = window.speechSynthesis.getVoices();
+    const jaVoice = voices.find(v => v.lang.includes('ja'));
+    if (jaVoice) utterance.voice = jaVoice;
+
+    utterance.onstart = () => flashAudioBtn.classList.add('playing');
+    utterance.onend = () => flashAudioBtn.classList.remove('playing');
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function updateFlashScore(jpWord, isCorrect) {
+    if (!flashScores[jpWord]) {
+        flashScores[jpWord] = { correct: 0, total: 0 };
+    }
+    flashScores[jpWord].total++;
+    if (isCorrect) {
+        flashScores[jpWord].correct++;
+    }
+    localStorage.setItem('flashScores', JSON.stringify(flashScores));
+}
+
+function sortFlashDeckByRatio() {
+    flashDeck.sort((a, b) => {
+        const scoreA = flashScores[a.jp] || { correct: 0, total: 0 };
+        const scoreB = flashScores[b.jp] || { correct: 0, total: 0 };
+
+        // Priority to new words (total === 0)
+        if (scoreA.total === 0 && scoreB.total > 0) return -1;
+        if (scoreB.total === 0 && scoreA.total > 0) return 1;
+        if (scoreA.total === 0 && scoreB.total === 0) return 0;
+
+        const ratioA = scoreA.correct / scoreA.total;
+        const ratioB = scoreB.correct / scoreB.total;
+
+        return ratioA - ratioB; // Lower ratio (worst) comes first
+    });
+}
 
 const bubbles = {
     yuki: document.getElementById('bubble-yuki'),
@@ -368,6 +429,7 @@ function startFlashcards() {
     homeView.classList.add('hidden');
     lessonView.classList.add('hidden');
     flashcardView.classList.remove('hidden');
+    sortFlashDeckByRatio();
     showFlashcard();
 }
 
@@ -375,13 +437,34 @@ function showFlashcard() {
     if (flashDeck.length === 0) {
         flashDeck = [...flashcardsData];
     }
+
+    // Prevent back-to-back repeats if possible
+    if (flashDeck.length > 1 && flashDeck[0].jp === lastShownCardJp) {
+        // Swap the top card with the second one
+        const temp = flashDeck[0];
+        flashDeck[0] = flashDeck[1];
+        flashDeck[1] = temp;
+    }
+
     const card = flashDeck[0];
+    lastShownCardJp = card.jp;
+
     flashJpText.textContent = card.jp;
     flashUserInput.value = '';
     flashFeedback.textContent = '';
     flashFeedback.className = 'feedback';
+
+    // Update Score Badge
+    const score = flashScores[card.jp] || { correct: 0, total: 0 };
+    flashScoreBadge.textContent = `${score.correct}/${score.total}`;
+
     deckCount.textContent = flashDeck.length;
     flashUserInput.focus();
+
+    // Auto-play audio if enabled
+    if (autoplayEnabled) {
+        speakJapanese(card.jp);
+    }
 }
 
 function checkFlashcardAnswer() {
@@ -392,17 +475,26 @@ function checkFlashcardAnswer() {
         flashFeedback.textContent = 'Correct!';
         flashFeedback.className = 'feedback success';
 
-        // Spaced repetition: move to bottom
+        updateFlashScore(flashDeck[0].jp, true);
+
+        // Spaced repetition: move to bottom (initial shift) then sort
         const card = flashDeck.shift();
         flashDeck.push(card);
+        sortFlashDeckByRatio();
 
         setTimeout(showFlashcard, 800);
     } else {
         flashFeedback.textContent = `Incorrect. The answer was "${flashDeck[0].en}".`;
         flashFeedback.className = 'feedback error shake';
 
-        // Spaced repetition: stay at top (already there)
-        setTimeout(() => flashFeedback.classList.remove('shake'), 500);
+        updateFlashScore(flashDeck[0].jp, false);
+
+        // Spaced repetition: stay at top, but re-sort might move it
+        setTimeout(() => {
+            flashFeedback.classList.remove('shake');
+            sortFlashDeckByRatio();
+            showFlashcard(); // Refresh score display and potentially new word
+        }, 1500);
     }
 }
 
@@ -529,6 +621,18 @@ nextBtn.addEventListener('click', () => {
 
 showScenariosBtn.addEventListener('click', () => switchMode('scenarios'));
 showFlashcardsBtn.addEventListener('click', () => switchMode('flashcards'));
+
+// Flashcard Audio Events
+flashAudioBtn.addEventListener('click', () => {
+    if (flashDeck.length > 0) {
+        speakJapanese(flashDeck[0].jp);
+    }
+});
+
+flashAutoplayToggle.addEventListener('change', (e) => {
+    autoplayEnabled = e.target.checked;
+    localStorage.setItem('flashAutoplay', autoplayEnabled);
+});
 
 flashSubmitBtn.addEventListener('click', checkFlashcardAnswer);
 flashUserInput.addEventListener('keydown', (e) => {
