@@ -1,11 +1,15 @@
 :root {
-    --primary: #6366f1;
-    --primary-glow: rgba(99, 102, 241, 0.5);
-    --accent: #f43f5e;
-    --bg-dark: #0f172a;
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --primary: #e76f51;
+    /* Soft Terracotta */
+    --primary-glow: rgba(231, 111, 81, 0.4);
+    --accent: #e9c46a;
+    /* Sandy Straw */
+    --bg-dark: #261b1b;
+    /* Softened Mahogany */
+    --glass-bg: rgba(45, 35, 35, 0.6);
+    --text-main: #ffffff;
+    --text-muted: #cbb9b9;
+    /* Muted Warm Grey */
     --font-main: 'Inter', sans-serif;
     --font-jp: 'Noto Sans JP', sans-serif;
 }
@@ -18,14 +22,16 @@
 
 body {
     font-family: var(--font-main);
-    background-color: var(--bg-dark);
     color: var(--text-main);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow-x: hidden;
-    background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+    background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('japan_garden.JPG');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 /* Removed old nav-toggle outside container */
